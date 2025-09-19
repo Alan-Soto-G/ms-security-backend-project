@@ -62,9 +62,21 @@ public class UsersController {
      * POST /api/users
      */
     @PostMapping
-    public User create(@RequestBody User newUser) {
+    public ResponseEntity create(@RequestBody User newUser) {
+        User checkUser = this.theUserRepository.getUserByEmail(newUser.getEmail());
+        if (checkUser != null) {
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body(Map.of(
+                            "error", "Email already exists",
+                            "code", HttpStatus.CONFLICT.value()
+                    ));
+        }else {
             newUser.setPassword(this.theEncryptionService.convertSHA256(newUser.getPassword()));
-            return this.theUserRepository.save(newUser);
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)
+                    .body(this.theUserRepository.save(newUser));
+        }
     }
 
     /**
