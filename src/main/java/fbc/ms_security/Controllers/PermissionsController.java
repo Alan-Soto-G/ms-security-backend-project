@@ -14,9 +14,12 @@ import fbc.ms_security.Models.Permission;
 import fbc.ms_security.Repositories.SessionRepository;
 import fbc.ms_security.Repositories.PermissionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @CrossOrigin
 @RestController // Trabajar con API REST
@@ -52,10 +55,20 @@ public class PermissionsController {
      * Método POST /api/permissions
      */
     @PostMapping
-    public Permission create(@RequestBody Permission newPermission) {
-
-
-        return this.thePermissionRepository.save(newPermission);
+    public ResponseEntity create(@RequestBody Permission newPermission) {
+        Permission checkPermission = this.thePermissionRepository.getPermission(newPermission.getUrl(), newPermission.getMethod());
+        if (checkPermission != null) {
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body(Map.of(
+                            "error", "Permission already exists",
+                            "status", HttpStatus.CONFLICT.value()
+                    ));
+        }else {
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)
+                    .body(this.thePermissionRepository.save(newPermission));
+        }
     }
 
     /**

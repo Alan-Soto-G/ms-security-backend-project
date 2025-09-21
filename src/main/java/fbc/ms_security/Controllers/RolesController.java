@@ -14,9 +14,12 @@ import fbc.ms_security.Models.Role;
 import fbc.ms_security.Repositories.SessionRepository;
 import fbc.ms_security.Repositories.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @CrossOrigin
 @RestController // Trabajar con API REST
@@ -52,8 +55,21 @@ public class RolesController {
      * POST /api/roles
      */
     @PostMapping
-    public Role create(@RequestBody Role newRole) {
-        return this.theRoleRepository.save(newRole);
+    public ResponseEntity create(@RequestBody Role newRole) {
+        Role checkRole = this.theRoleRepository.getRoleByName(newRole.getName().toLowerCase().trim());
+        if (checkRole != null) {
+            return ResponseEntity
+                        .status(HttpStatus.CONFLICT)
+                        .body(Map.of(
+                                "message", "Role already exists",
+                                "status", HttpStatus.CONFLICT.value()
+                ));
+        }else {
+            newRole.setName(newRole.getName().toLowerCase().trim());
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)
+                    .body(this.theRoleRepository.save(newRole));
+        }
     }
 
     /**

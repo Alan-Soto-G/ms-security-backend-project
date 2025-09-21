@@ -69,7 +69,7 @@ public class UsersController {
                     .status(HttpStatus.CONFLICT)
                     .body(Map.of(
                             "error", "Email already exists",
-                            "code", HttpStatus.CONFLICT.value()
+                            "status", HttpStatus.CONFLICT.value()
                     ));
         }else {
             newUser.setPassword(this.theEncryptionService.convertSHA256(newUser.getPassword()));
