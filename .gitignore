@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# 🔒 Firebase service account (no subir credenciales)
+src/main/resources/firebase-service-account.json
