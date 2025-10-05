@@ -41,4 +41,82 @@ public class AuthController {
             }
         }
     }
+
+    // Agregado 05/10/2025 - Endpoint específico para autenticación con Microsoft
+    // Mantiene la misma estructura que Google para consistencia en la API
+    @PostMapping("/microsoft")
+    public ResponseEntity<?> loginWithMicrosoft(@RequestBody Map<String, String> request) {
+        String idToken = request.get("idToken");
+
+        try {
+            Map<String, Object> response = authService.loginWithMicrosoft(idToken);
+            return ResponseEntity.ok(response);
+
+        } catch (RuntimeException e) {
+            String message = e.getMessage().toLowerCase();
+            if (message.contains("vencido") || message.contains("expirado")) {
+                return ResponseEntity
+                        .status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "Token de Microsoft vencido"));
+            } else if (message.contains("inválido")) {
+                return ResponseEntity
+                        .status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "Token de Microsoft inválido"));
+            } else {
+                return ResponseEntity
+                        .status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", e.getMessage()));
+            }
+        }
+    }
+}
+
+// Agregado 05/10/2025 - Nuevo controlador para endpoints públicos de autenticación
+// Permite autenticación con cualquier proveedor OAuth configurado sin necesidad de autenticación previa
+@CrossOrigin
+@RestController
+@RequestMapping("/api/public")
+class PublicAuthController {
+
+    @Autowired
+    private AuthService authService;
+
+    // Agregado 05/10/2025 - Endpoint genérico que acepta múltiples proveedores OAuth
+    // Resuelve el problema de CORS permitiendo autenticación desde frontend Angular
+    @PostMapping("/auth")
+    public ResponseEntity<?> loginWithProvider(@RequestBody Map<String, String> request) {
+        String idToken = request.get("idToken");
+        String provider = request.get("provider");
+
+        if (idToken == null || idToken.trim().isEmpty()) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Token requerido"));
+        }
+
+        if (provider == null || provider.trim().isEmpty()) {
+            provider = "google"; // Default para compatibilidad
+        }
+
+        try {
+            Map<String, Object> response = authService.loginWithProvider(idToken, provider);
+            return ResponseEntity.ok(response);
+
+        } catch (RuntimeException e) {
+            String message = e.getMessage().toLowerCase();
+            if (message.contains("vencido") || message.contains("expirado")) {
+                return ResponseEntity
+                        .status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "Token vencido"));
+            } else if (message.contains("inválido")) {
+                return ResponseEntity
+                        .status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("error", "Token inválido"));
+            } else {
+                return ResponseEntity
+                        .status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", e.getMessage()));
+            }
+        }
+    }
 }
