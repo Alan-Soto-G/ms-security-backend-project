@@ -4,37 +4,39 @@ import fbc.ms_security.Services.MailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
+import java.util.*;
 
 @CrossOrigin
 @RestController
-@RequestMapping("/api/mail")
+@RequestMapping("/api/public/email")
 public class MailController {
 
     @Autowired
     private MailService mailService;
 
-    /**
-     * Endpoint para enviar un correo.
-     * Recibe JSON con "to", "subject" y "mensaje".
-     * Ejemplo de JSON:
-     * {
-     *   "to": "destino@example.com",
-     *   "subject": "Asunto",
-     *   "mensaje": "Contenido del correo"
-     * }
-     * Método POST /api/mail
-     */
     @PostMapping
-    public String enviarCorreo(@RequestBody Map<String, String> payload) {
-        String to = payload.get("to");
-        String subject = payload.get("subject");
-        String mensaje = payload.get("mensaje");
+    public String enviarCorreo(@RequestBody Map<String, Object> payload) {
+        Object recipientsObj = payload.get("recipients");
+        String subject = (String) payload.get("subject");
+        String content = (String) payload.get("content");
 
-        if (to == null || subject == null || mensaje == null) {
-            return "Error: faltan campos requeridos (to, subject, mensaje)";
+        if (recipientsObj == null || subject == null || content == null) {
+            return "Error: faltan campos requeridos (recipients, subject, content)";
         }
 
-        return mailService.enviarMensaje(to, subject, mensaje);
+        List<String> recipients = new ArrayList<>();
+
+        // Manejar tanto String como List
+        if (recipientsObj instanceof String) {
+            // Si es un solo email como string
+            recipients.add((String) recipientsObj);
+        } else if (recipientsObj instanceof List) {
+            // Si es una lista de emails
+            recipients = (List<String>) recipientsObj;
+        } else {
+            return "Error: recipients debe ser un string o una lista de strings";
+        }
+
+        return mailService.enviarMensaje(recipients, subject, content);
     }
 }

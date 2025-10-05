@@ -13,6 +13,9 @@ public class Profile {
     private String phone;
 
     @DBRef
+    private User user;
+
+    @DBRef
     private Photo photo;
 
     public Profile () {}

@@ -2,7 +2,6 @@ package fbc.ms_security.Models;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
@@ -13,9 +12,6 @@ public class User {
     private String name;
     private String email;
     private String password;
-
-    @DBRef
-    private Profile profile;
 
     public User() {}
 
@@ -55,14 +51,6 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public Profile getProfile() {
-        return profile;
-    }
-
-    public void setProfile(Profile profile) {
-        this.profile = profile;
     }
 }
 

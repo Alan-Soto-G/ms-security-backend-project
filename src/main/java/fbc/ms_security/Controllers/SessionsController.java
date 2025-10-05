@@ -63,7 +63,6 @@ public class SessionsController {
             // Actualiza los campos de la sesión
             actualSession.setExpiration(newSession.getExpiration());
             actualSession.setToken(newSession.getToken());
-            actualSession.setCode2FA(newSession.getCode2FA());
             this.theSessionRepository.save(actualSession);
             return actualSession;
         } else {

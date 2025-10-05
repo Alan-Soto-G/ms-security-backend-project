@@ -41,7 +41,7 @@ public class SecurityController {
         String token="";
         User theActualUser=this.theUserRepository.getUserByEmail(theNewUser.getEmail());
         if(theActualUser!=null &&
-           theActualUser.getPassword().equals(theEncryptionService.convertSHA256(theNewUser.getPassword()))){
+                theActualUser.getPassword().equals(theEncryptionService.convertSHA256(theNewUser.getPassword()))){
             token=theJwtService.generateToken(theActualUser);
             theActualUser.setPassword("");
             theResponse.put("token",token);

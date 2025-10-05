@@ -12,6 +12,8 @@ package fbc.ms_security.Controllers;
 
 import fbc.ms_security.Models.Session;
 import fbc.ms_security.Models.User;
+import fbc.ms_security.Models.Profile;
+import fbc.ms_security.Repositories.ProfileRepository;
 import fbc.ms_security.Repositories.SessionRepository;
 import fbc.ms_security.Repositories.UserRepository;
 import fbc.ms_security.Services.EncryptionService;
@@ -36,6 +38,9 @@ public class UsersController {
     private SessionRepository theSessionRepository;
 
     @Autowired
+    private ProfileRepository theProfileRepository;
+
+    @Autowired
     private EncryptionService theEncryptionService;
 
     /**
@@ -58,6 +63,22 @@ public class UsersController {
     }
 
     /**
+     * Busca un usuario por su EMAIL.
+     * GET /api/users/{email}
+     */
+    @GetMapping("email/{email}")
+    public ResponseEntity<User> findByEmail(@PathVariable String email) {
+        User theUser = this.theUserRepository.getUserByEmail(email);
+        if (theUser != null) {
+            return ResponseEntity.ok(theUser);
+        } else {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .build();
+        }
+    }
+
+    /**
      * Crea un nuevo usuario.
      * POST /api/users
      */
@@ -73,9 +94,18 @@ public class UsersController {
                     ));
         }else {
             newUser.setPassword(this.theEncryptionService.convertSHA256(newUser.getPassword()));
+            User savedUser = this.theUserRepository.save(newUser);
+            savedUser.setPassword("********");
+
+            Profile newProfile = new Profile();
+            newProfile.setUser(savedUser);
+            newProfile.setPhone("");
+            newProfile.setPhoto(null);
+            this.theProfileRepository.save(newProfile);
+
             return ResponseEntity
                     .status(HttpStatus.CREATED)
-                    .body(this.theUserRepository.save(newUser));
+                    .body(savedUser);
         }
     }
 
