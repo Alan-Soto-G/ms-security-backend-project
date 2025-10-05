@@ -11,8 +11,8 @@ import java.util.Optional;
 
 @Repository
 public interface RolePermissionRepository extends MongoRepository<RolePermission, String> {
-    @Query("{'user.$id': ObjectId(?0)}")
-    public List<RolePermission> getRolesByPermission(String userId);
+    @Query("{'permission.$id': ObjectId(?0)}")  // ✅ Correcto
+    public List<RolePermission> getRolesByPermission(String permissionId);
 
     @Query("{'role.$id': ObjectId(?0)}")
     public List<RolePermission> getPermissionByRole(String roleId);
