@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
-@CrossOrigin
+@CrossOrigin(origins = "${frontend.url}")
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {

@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
-@CrossOrigin
+@CrossOrigin(origins = "${frontend.url}")
 @RestController // Trabajar con API REST
 @RequestMapping("/api/role-permission") // URL de la api donde se activa este controlador
 public class RolePermissionController {

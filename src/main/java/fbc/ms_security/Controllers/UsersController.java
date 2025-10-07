@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 @Slf4j
-@CrossOrigin
+@CrossOrigin(origins = "${frontend.url}")
 @RestController // Trabajar con API REST
 @RequestMapping("/api/users") // URL de la api donde se activa este controlador
 public class UsersController {

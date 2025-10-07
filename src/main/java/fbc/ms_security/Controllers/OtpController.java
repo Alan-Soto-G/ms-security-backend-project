@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 /**
  * Controlador que gestiona las operaciones de Contraseña de Un Solo Uso (OTP), incluyendo:
  * - Generación de un nuevo OTP y envío por email/SMS.
@@ -16,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
  *
  * Todos los endpoints están expuestos bajo la ruta '/otp'.
  */
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "${frontend.url}")
 @RestController
 @RequestMapping("/api/public/otp")
 public class OtpController {
@@ -45,12 +47,14 @@ public class OtpController {
     /**
      * Genera un código OTP aleatorio de 6 dígitos, lo persiste y lo envía vía MailService.
      *
-     * @param email dirección de email del destinatario
+     * @param requestBody contiene email y userName del destinatario
      * @return el código OTP generado (devuelto para pruebas; eliminar o enmascarar en producción)
      */
-    @PostMapping("/generate/{email}")
-    public String generateOtp(@PathVariable String email) {
+    @PostMapping("/generate")
+    public String generateOtp(@RequestBody Map<String, String> requestBody) {
         String code = String.valueOf((int)(Math.random() * 900000) + 100000); // 6 dígitos
+        String email = requestBody.get("email");
+        String userName = requestBody.get("userName");
         otpService.saveOtp(email, code);
         System.out.println("✅ OTP GENERADO para " + email + ": " + code);
 
@@ -66,7 +70,7 @@ public class OtpController {
                 "            <div style='margin-bottom: 30px;'>" +
                 "                <span style='font-size: 60px;'>✨</span>" +
                 "            </div>" +
-                "            <h2 style='color: #333; margin: 0 0 20px 0; font-size: 24px;'>¡Hola! 👋</h2>" +
+                "            <h2 style='color: #333; margin: 0 0 20px 0; font-size: 24px;'>¡Hola " + userName + "! 👋</h2>" +
                 "            <p style='color: #666; font-size: 16px; line-height: 1.6; margin: 0 0 30px 0;'>" +
                 "                Has solicitado un código de verificación para autenticar tu cuenta. " +
                 "                Usa el siguiente código para continuar:" +
@@ -91,7 +95,7 @@ public class OtpController {
                 "    </tr>" +
                 "</table>";
 
-        this.mailService.enviarMensaje(email, subject, htmlContent);
+        this.mailService.enviarMensaje(email, subject, htmlContent, false);
         return code; // solo para pruebas
     }
 

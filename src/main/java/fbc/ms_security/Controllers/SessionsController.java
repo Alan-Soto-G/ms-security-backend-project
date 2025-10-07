@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin
+@CrossOrigin(origins = "${frontend.url}")
 @RestController // Trabajar con API REST
 @RequestMapping("/api/sessions") // URL de la api donde se activa este controlador
 public class SessionsController {

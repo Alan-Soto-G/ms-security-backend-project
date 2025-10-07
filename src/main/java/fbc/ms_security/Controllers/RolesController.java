@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-@CrossOrigin
+@CrossOrigin(origins = "${frontend.url}")
 @RestController // Trabajar con API REST
 @RequestMapping("/api/roles") // URL de la api donde se activa este controlador
 public class RolesController {

@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
-@CrossOrigin
+@CrossOrigin(origins = "${frontend.url}")
 @RestController
 @RequestMapping("/api/public/email")
 public class MailController {
@@ -19,6 +19,7 @@ public class MailController {
         Object recipientsObj = payload.get("recipients");
         String subject = (String) payload.get("subject");
         String content = (String) payload.get("content");
+        boolean is_Html = payload.get("isHtml") != null && (Boolean) payload.get("isHtml");
 
         if (recipientsObj == null || subject == null || content == null) {
             return "Error: faltan campos requeridos (recipients, subject, content)";
@@ -37,6 +38,6 @@ public class MailController {
             return "Error: recipients debe ser un string o una lista de strings";
         }
 
-        return mailService.enviarMensaje(recipients, subject, content);
+        return mailService.enviarMensaje(recipients, subject, content, is_Html);
     }
 }

@@ -19,7 +19,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-@CrossOrigin
+@CrossOrigin(origins = "${frontend.url}")
 @RestController
 @RequestMapping("/api/public/security")
 public class SecurityController {

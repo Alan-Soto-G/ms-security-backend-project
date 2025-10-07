@@ -13,7 +13,7 @@ public class MailService {
     @Value("${ms-notifications.api.url}")
     private String notificationsUrl;
 
-    public String enviarMensaje(List<String> recipients, String subject, String mensaje) {
+    public String enviarMensaje(List<String> recipients, String subject, String content, boolean is_Html) {
         String endpoint = "/send-email"; // ✅ Endpoint unificado
 
         Map<String, Object> requestBody = new HashMap<>();
@@ -26,8 +26,8 @@ public class MailService {
         }
 
         requestBody.put("subject", subject);
-        requestBody.put("content", mensaje);
-        requestBody.put("is_html", false); // ✅ Indicar que el contenido es HTML
+        requestBody.put("content", content);
+        requestBody.put("is_html", is_Html); // ✅ Indicar que el contenido es HTML
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -52,7 +52,7 @@ public class MailService {
     }
 
     // Método de conveniencia para un solo email
-    public String enviarMensaje(String to, String subject, String mensaje) {
-        return enviarMensaje(Arrays.asList(to), subject, mensaje);
+    public String enviarMensaje(String to, String subject, String content, boolean is_Html) {
+        return enviarMensaje(Arrays.asList(to), subject, content, is_Html);
     }
 }
