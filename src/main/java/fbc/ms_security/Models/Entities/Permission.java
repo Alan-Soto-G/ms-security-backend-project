@@ -8,12 +8,14 @@ public class Permission {
     private String url;
     private String method;
     private String model;
+    private Integer usageCount = 0;
 
     public Permission() {}
 
     public Permission(String url, String method) {
         this.url = url;
         this.method = method;
+        this.usageCount = 0;
     }
 
     public String get_id() {
@@ -46,5 +48,17 @@ public class Permission {
 
     public void setModel(String model) {
         this.model = model;
+    }
+
+    public Integer getUsageCount() {
+        return usageCount;
+    }
+
+    public void setUsageCount(Integer usageCount) {
+        this.usageCount = usageCount;
+    }
+
+    public void incrementUsage() {
+        this.usageCount++;
     }
 }
