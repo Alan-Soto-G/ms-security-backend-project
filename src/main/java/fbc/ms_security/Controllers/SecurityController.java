@@ -218,35 +218,52 @@ public class SecurityController {
 
     /**
      * GET /api/public/security/user/{email}
-     * Obtiene un usuario por su email y devuelve sus datos sin la contraseña.
-     * Usa UserService para mantener la lógica en la capa de servicio.
+     * Verifica si un usuario existe por su email.
+     * Retorna información sobre la existencia del usuario para facilitar el flujo de registro.
      *
-     * @param email Email del usuario
-     * @return ResponseEntity con el usuario (sin password) si existe, error 404 si no
+     * @param email Email del usuario a verificar
+     * @return ResponseEntity con JSON indicando si el usuario existe y sus datos (sin password)
+     *
+     * Respuestas:
+     * - 200 OK con { "exists": true, "user": {...} } si el usuario existe
+     * - 200 OK con { "exists": false } si el usuario no existe
+     * - 500 Internal Server Error en caso de error
      */
     @GetMapping("/user/{email}")
-    public ResponseEntity<User> getOrCreateUserByEmail(@PathVariable String email) {
-        logger.info("Buscando usuario por email: {}", email);
+    public ResponseEntity<Map<String, Object>> getOrCreateUserByEmail(@PathVariable String email) {
+        logger.info("Verificando existencia de usuario con email: {}", email);
 
         try {
-            boolean userExist = userService.emailExists(email);
-            if (!userExist) {
-                logger.warn("Usuario no encontrado con email: {}", email);
-                return ResponseEntity
-                        .status(HttpStatus.NOT_FOUND)
-                        .build();
+            boolean userExists = userService.emailExists(email);
+
+            if (!userExists) {
+                logger.info("Usuario no existe con email: {}", email);
+                return ResponseEntity.ok(Map.of("exists", false));
             } else {
                 User theUser = userService.findByEmail(email);
-                // Limpiar la contraseña por seguridad
+
                 if (theUser != null) {
+                    // Limpiar la contraseña por seguridad
                     theUser.setPassword("");
-                    logger.info("Usuario encontrado: {}", email);
+                    logger.info("Usuario existe con email: {}", email);
+                    return ResponseEntity.ok(Map.of(
+                            "exists", true,
+                            "user", theUser
+                    ));
+                } else {
+                    // Caso edge: emailExists retornó true pero findByEmail retornó null
+                    logger.warn("Inconsistencia: emailExists retornó true pero usuario no encontrado para: {}", email);
+                    return ResponseEntity.ok(Map.of("exists", false));
                 }
-                return ResponseEntity.ok(theUser);
             }
         } catch (Exception e) {
-            logger.error("Error al buscar usuario por email {}: {}", email, e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            logger.error("Error al verificar existencia de usuario con email {}: {}", email, e.getMessage(), e);
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of(
+                            "exists", false,
+                            "error", "Error al verificar usuario: " + e.getMessage()
+                    ));
         }
     }
 
