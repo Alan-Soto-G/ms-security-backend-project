@@ -1,4 +1,4 @@
-package fbc.ms_security.Models;
+package fbc.ms_security.Models.Entities;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;

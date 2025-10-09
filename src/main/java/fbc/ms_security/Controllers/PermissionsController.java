@@ -1,19 +1,9 @@
-/*
- * Controlador para gestionar los permisos del sistema.
- * Proporciona endpoints para crear, leer, actualizar y listar permisos.
- *
- * Anotaciones principales:
- * @RestController: Indica que esta clase es un controlador REST, responde con JSON.
- * @RequestMapping: Define la URL base para los endpoints de este controlador.
- * @Autowired: Inyecta automáticamente las dependencias (repositorios) necesarias.
- * @CrossOrigin: Permite peticiones desde otros dominios (CORS).
- */
 package fbc.ms_security.Controllers;
 
-import fbc.ms_security.Models.Permission;
-import fbc.ms_security.Repositories.SessionRepository;
+import fbc.ms_security.Models.Entities.Permission;
 import fbc.ms_security.Repositories.PermissionRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,84 +11,106 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-@CrossOrigin(origins = "${frontend.url}")
-@RestController // Trabajar con API REST
-@RequestMapping("/api/permissions") // URL de la api donde se activa este controlador
+@RestController
+@RequestMapping("/api/permissions")
 public class PermissionsController {
-    @Autowired // Inyección automática del repositorio de permisos
-    private PermissionRepository thePermissionRepository;
+    private static final Logger logger = LoggerFactory.getLogger(PermissionsController.class);
+    private final PermissionRepository thePermissionRepository;
 
-    @Autowired // Inyección automática del repositorio de sesiones
-    private SessionRepository theSessionRepository;
+    public PermissionsController(PermissionRepository thePermissionRepository) {
+        this.thePermissionRepository = thePermissionRepository;
+    }
 
     /**
      * Obtiene todos los permisos registrados.
-     * Método GET /api/permissions
      */
     @GetMapping("")
-    public List<Permission> find() {
-        return this.thePermissionRepository.findAll();
+    public ResponseEntity<List<Permission>> findAll() {
+        List<Permission> permissions = this.thePermissionRepository.findAll();
+        if (permissions.isEmpty()) {
+            logger.warn("No se encontraron permisos registrados.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+        logger.info("Se encontraron {} permisos.", permissions.size());
+        return ResponseEntity.ok(permissions);
     }
 
     /**
      * Busca un permiso por su ID.
-     * Método GET /api/permissions/{id}
      */
-    @GetMapping("{id}")
-    public Permission findById(@PathVariable String id) {
-        Permission thePermission = this.thePermissionRepository.findById(id).orElse(null);
-        return thePermission;
+    @GetMapping("/{id}")
+    public ResponseEntity<Permission> findById(@PathVariable String id) {
+        return this.thePermissionRepository.findById(id)
+                .map(permission -> {
+                    logger.info("Permiso encontrado con ID: {}", id);
+                    return ResponseEntity.ok(permission);
+                })
+                .orElseGet(() -> {
+                    logger.warn("Permiso no encontrado con ID: {}", id);
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+                });
     }
 
     /**
      * Crea un nuevo permiso.
-     * Método POST /api/permissions
      */
-    @PostMapping
-    public ResponseEntity create(@RequestBody Permission newPermission) {
-        Permission checkPermission = this.thePermissionRepository.getPermission(newPermission.getUrl(), newPermission.getMethod());
-        if (checkPermission != null) {
-            return ResponseEntity
-                    .status(HttpStatus.CONFLICT)
-                    .body(Map.of(
-                            "error", "Permission already exists",
-                            "status", HttpStatus.CONFLICT.value()
-                    ));
-        }else {
-            return ResponseEntity
-                    .status(HttpStatus.CREATED)
-                    .body(this.thePermissionRepository.save(newPermission));
+    @PostMapping("")
+    public ResponseEntity<?> create(@RequestBody Permission newPermission) {
+        if (newPermission.getUrl() == null || newPermission.getMethod() == null) {
+            logger.error("Datos incompletos para crear un permiso.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Datos incompletos", "status", HttpStatus.BAD_REQUEST.value()));
         }
+        Permission existingPermission = this.thePermissionRepository.getPermission(newPermission.getUrl(), newPermission.getMethod());
+        if (existingPermission != null) {
+            logger.warn("El permiso ya existe: URL={}, Method={}", newPermission.getUrl(), newPermission.getMethod());
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "Permission already exists", "status", HttpStatus.CONFLICT.value()));
+        }
+        Permission savedPermission = this.thePermissionRepository.save(newPermission);
+        logger.info("Permiso creado con éxito: {}", savedPermission);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedPermission);
     }
 
     /**
      * Actualiza un permiso existente por su ID.
-     * Método PUT /api/permissions/{id}
      */
-    @PutMapping("{id}")
-    public Permission update(@PathVariable String id, @RequestBody Permission newPermission) {
-        Permission actualPermission = this.thePermissionRepository.findById(id).orElse(null);
-        if (actualPermission != null) {
-            // Actualiza los campos del permiso
-            actualPermission.setUrl(newPermission.getUrl());
-            actualPermission.setMethod(newPermission.getMethod());
-            actualPermission.setUrl(newPermission.getUrl());
-            this.thePermissionRepository.save(actualPermission);
-            return actualPermission;
-        } else {
-            return null;
-        }
+    @PutMapping("/{id}")
+    public ResponseEntity<?> update(@PathVariable String id, @RequestBody Permission newPermission) {
+        return this.thePermissionRepository.findById(id)
+                .map(existingPermission -> {
+                    if (newPermission.getUrl() == null || newPermission.getMethod() == null) {
+                        logger.error("Datos incompletos para actualizar el permiso con ID: {}", id);
+                        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                .body(Map.of("error", "Datos incompletos", "status", HttpStatus.BAD_REQUEST.value()));
+                    }
+                    existingPermission.setUrl(newPermission.getUrl());
+                    existingPermission.setMethod(newPermission.getMethod());
+                    Permission updatedPermission = this.thePermissionRepository.save(existingPermission);
+                    logger.info("Permiso actualizado con éxito: {}", updatedPermission);
+                    return ResponseEntity.ok(updatedPermission);
+                })
+                .orElseGet(() -> {
+                    logger.warn("Permiso no encontrado para actualizar con ID: {}", id);
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+                });
     }
 
     /**
      * Elimina un permiso por su ID.
-     * Método DELETE /api/permissions/{id}
      */
-    @DeleteMapping("{id}")
-    public void delete(@PathVariable String id) {
-        Permission thePermission = this.thePermissionRepository.findById(id).orElse(null);
-        if (thePermission != null) {
-            this.thePermissionRepository.delete(thePermission);
-        }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delete(@PathVariable String id) {
+        return this.thePermissionRepository.findById(id)
+                .map(permission -> {
+                    this.thePermissionRepository.delete(permission);
+                    logger.info("Permiso eliminado con éxito: ID={}", id);
+                    return ResponseEntity.ok(Map.of("message", "Permiso eliminado con éxito"));
+                })
+                .orElseGet(() -> {
+                    logger.warn("Permiso no encontrado para eliminar con ID: {}", id);
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                            .body(Map.of("error", "Permiso no encontrado", "status", String.valueOf(HttpStatus.NOT_FOUND.value())));
+                });
     }
 }

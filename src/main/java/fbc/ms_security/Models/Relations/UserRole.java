@@ -1,5 +1,7 @@
-package fbc.ms_security.Models;
+package fbc.ms_security.Models.Relations;
 
+import fbc.ms_security.Models.Entities.Role;
+import fbc.ms_security.Models.Entities.User;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;

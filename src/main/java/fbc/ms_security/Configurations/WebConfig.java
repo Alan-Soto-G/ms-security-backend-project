@@ -2,6 +2,7 @@ package fbc.ms_security.Configurations;
 
 import fbc.ms_security.Interceptors.SecurityInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
@@ -9,15 +10,19 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
-    @Autowired
     private SecurityInterceptor securityInterceptor;
+    public WebConfig(SecurityInterceptor securityInterceptor) {
+        this.securityInterceptor = securityInterceptor;
+    }
 
-    // Agregado 05/10/2025 - Configuración CORS para permitir solicitudes desde el frontend Angular
-    // Permite solicitudes desde http://localhost:4200 con todos los métodos HTTP necesarios
+    @Value("${frontend.url}")
+    private String frontendUrl;
+
+    // Configuración CORS general usando variable de entorno frontend.url
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:4200")
+                .allowedOrigins(frontendUrl)
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);
@@ -25,10 +30,8 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-
-        /*registry.addInterceptor(securityInterceptor)
+        registry.addInterceptor(securityInterceptor)
                 .addPathPatterns("/api/**")
-                .excludePathPatterns("/api/public/**")
-       ;*/
+                .excludePathPatterns("/api/public/**");
     }
 }

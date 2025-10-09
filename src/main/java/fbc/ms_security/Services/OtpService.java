@@ -8,11 +8,10 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 public class OtpService {
-
     @Autowired
     private StringRedisTemplate redisTemplate;
 
-    private static final long EXPIRATION_TIME = 5; // minutos
+    private static final long EXPIRATION_TIME = 5; // Minutos
 
     // Guardar OTP en Redis con expiración
     public void saveOtp(String identifier, String otpCode) {
@@ -26,14 +25,13 @@ public class OtpService {
     }
 
     // Eliminar OTP
-    public void deleteOtp(String identifier) {
-        redisTemplate.delete("otp:" + identifier);
+    public boolean deleteOtp(String identifier) {
+        return Boolean.TRUE.equals(redisTemplate.delete("otp:" + identifier));
     }
 
     // Validar OTP
     public boolean validateOtp(String identifier, String inputCode) {
         String savedCode = getOtp(identifier);
-
         if (savedCode != null && savedCode.equals(inputCode)) {
             deleteOtp(identifier); // ⚡ OTP de un solo uso
             return true;

@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
-@CrossOrigin(origins = "${frontend.url}")
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -73,7 +72,6 @@ public class AuthController {
 
 // Agregado 05/10/2025 - Nuevo controlador para endpoints públicos de autenticación
 // Permite autenticación con cualquier proveedor OAuth configurado sin necesidad de autenticación previa
-@CrossOrigin
 @RestController
 @RequestMapping("/api/public")
 class PublicAuthController {

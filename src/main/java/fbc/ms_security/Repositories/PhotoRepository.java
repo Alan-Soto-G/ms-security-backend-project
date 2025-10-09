@@ -1,6 +1,6 @@
 package fbc.ms_security.Repositories;
 
-import fbc.ms_security.Models.Photo;
+import fbc.ms_security.Models.Entities.Photo;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 

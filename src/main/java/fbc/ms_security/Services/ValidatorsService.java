@@ -1,6 +1,10 @@
 package fbc.ms_security.Services;
 
-import fbc.ms_security.Models.*;
+import fbc.ms_security.Models.Entities.Permission;
+import fbc.ms_security.Models.Entities.Role;
+import fbc.ms_security.Models.Entities.User;
+import fbc.ms_security.Models.Relations.RolePermission;
+import fbc.ms_security.Models.Relations.UserRole;
 import fbc.ms_security.Repositories.PermissionRepository;
 import fbc.ms_security.Repositories.RolePermissionRepository;
 import fbc.ms_security.Repositories.UserRepository;

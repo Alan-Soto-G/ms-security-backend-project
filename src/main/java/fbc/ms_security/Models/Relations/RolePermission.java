@@ -1,5 +1,7 @@
-package fbc.ms_security.Models;
+package fbc.ms_security.Models.Relations;
 
+import fbc.ms_security.Models.Entities.Permission;
+import fbc.ms_security.Models.Entities.Role;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 
 public class RolePermission {

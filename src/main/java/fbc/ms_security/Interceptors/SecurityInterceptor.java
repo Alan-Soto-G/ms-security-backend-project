@@ -10,13 +10,13 @@ import org.springframework.web.servlet.ModelAndView;
 
 @Component
 public class SecurityInterceptor implements HandlerInterceptor {
-    @Autowired
     private ValidatorsService validatorService;
+    public SecurityInterceptor(ValidatorsService validatorService) {
+        this.validatorService = validatorService;
+    }
+
     @Override
-    public boolean preHandle(HttpServletRequest request,
-                             HttpServletResponse response,
-                             Object handler)
-            throws Exception {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         boolean success=this.validatorService.validationRolePermission(request,request.getRequestURI(),request.getMethod());
         return success;
     }

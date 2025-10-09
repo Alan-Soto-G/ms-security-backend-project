@@ -2,7 +2,7 @@ package fbc.ms_security.Services;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
-import fbc.ms_security.Models.User;
+import fbc.ms_security.Models.Entities.User;
 import fbc.ms_security.Repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
